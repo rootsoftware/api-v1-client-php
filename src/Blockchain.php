@@ -39,9 +39,9 @@ if(!function_exists('curl_init')) {
     throw new Error("cURL module not installed.");
 }
 
-class Blockchain {
+class Blockchain
+{
     const URL = 'https://blockchain.info/';
-
 
     private $ch;
     private $api_code = null;
@@ -49,7 +49,8 @@ class Blockchain {
     const DEBUG = true;
     public $log = Array();
 
-    public function __construct($api_code=null) {
+    public function __construct($api_code=null)
+    {
         if(!is_null($api_code)) {
             $this->api_code = $api_code;
         }
@@ -62,6 +63,18 @@ class Blockchain {
         curl_setopt($this->ch, CURLOPT_TIMEOUT, 60);
         curl_setopt($this->ch, CURLOPT_CAINFO, dirname(__FILE__).'/Blockchain/ca-bundle.crt');
 
+        if (sizeOf($this->proxy)) {
+			
+			curl_setopt($this->ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
+			
+			curl_setopt($this->ch, CURLOPT_PROXY, $this->proxy['ip']);
+			curl_setopt($this->ch, CURLOPT_PROXYPORT, $this->proxy['port']);
+			
+			if ($this->proxy['login'] && $this->proxy['password']) {
+				curl_setopt($this->ch, CURLOPT_PROXYUSERPWD, $this->proxy['login'] . ':' . $this->proxy['password']);
+			}
+		}
+		
         $this->Create   = new Create($this);
         $this->Explorer = new Explorer($this);
         $this->Push     = new Push($this);
@@ -140,4 +153,24 @@ class Blockchain {
 
         return $json;
     }
+    
+    /**
+     * set params for CURLOPT_PROXY, CURLOPT_PROXYPORT, CURLOPT_PROXYUSERPWD  if any
+     * 
+     * @param array $proxy 
+     */
+    public function setProxy($proxy)
+	{
+		if (sizeOf($proxy)) {
+			
+			curl_setopt($this->ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
+			
+			curl_setopt($this->ch, CURLOPT_PROXY, $proxy['ip']);
+			curl_setopt($this->ch, CURLOPT_PROXYPORT, $proxy['port']);
+			
+			if ($proxy['login'] && $proxy['password']) {
+				curl_setopt($this->ch, CURLOPT_PROXYUSERPWD, $proxy['login'] . ':' . $proxy['password']);
+			}
+		}
+	}
 }
