@@ -39,25 +39,18 @@ if(!function_exists('curl_init')) {
     throw new Error("cURL module not installed.");
 }
 
-class Blockchain {
+class Blockchain
+{
     const URL = 'https://blockchain.info/';
-
 
     private $ch;
     private $api_code = null;
-    
-    /**
-     * required keys - ip, port
-     * optional keys - login, password
-     * 
-     * @var array
-     */
-    private $proxy = array();
 
     const DEBUG = true;
     public $log = Array();
 
-    public function __construct($api_code=null) {
+    public function __construct($api_code=null)
+    {
         if(!is_null($api_code)) {
             $this->api_code = $api_code;
         }
@@ -168,6 +161,16 @@ class Blockchain {
      */
     public function setProxy($proxy)
 	{
-		$this->proxy = $proxy;
+		if (sizeOf($proxy)) {
+			
+			curl_setopt($this->ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
+			
+			curl_setopt($this->ch, CURLOPT_PROXY, $proxy['ip']);
+			curl_setopt($this->ch, CURLOPT_PROXYPORT, $proxy['port']);
+			
+			if ($proxy['login'] && $proxy['password']) {
+				curl_setopt($this->ch, CURLOPT_PROXYUSERPWD, $proxy['login'] . ':' . $proxy['password']);
+			}
+		}
 	}
 }
